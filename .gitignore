@@ -1,0 +1,4 @@
+# Generated pages
+output/
+__pycache__/
+.venv/
