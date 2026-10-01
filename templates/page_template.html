@@ -1,0 +1,85 @@
+{#-
+  page_template.html - Jinja2 template for one service x city landing page.
+
+  Variables come from generate_pages.py:
+    row         - one row of data/locations.csv (dict)
+    page        - computed values: url, title, meta_description, h1, lang, dir, faqs, related
+    schema_json - pre-built JSON-LD string (built in Python so it is always valid JSON)
+-#}
+<!DOCTYPE html>
+<html lang="{{ page.lang }}" dir="{{ page.dir }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ page.title }}</title>
+  <meta name="description" content="{{ page.meta_description }}">
+  <link rel="canonical" href="{{ page.url }}">
+  {% if page.noindex %}
+  <meta name="robots" content="noindex, follow">
+  {% endif %}
+  <script type="application/ld+json">
+{{ schema_json | safe }}
+  </script>
+</head>
+<body>
+  <nav aria-label="Breadcrumb">
+    <a href="{{ page.base_url }}/">Home</a> &rsaquo;
+    <a href="{{ page.base_url }}/{{ row.locale }}/{{ row.service_slug }}/">{{ row.service }}</a> &rsaquo;
+    <span>{{ row.city }}</span>
+  </nav>
+
+  <main>
+    <h1>{{ page.h1 }}</h1>
+
+    {# Unique block 1: city-specific introduction from the dataset. #}
+    <p class="intro">{{ row.local_intro }}</p>
+
+    <section>
+      <h2>{{ row.service }} in {{ row.city }} at a glance</h2>
+      <ul>
+        <li><strong>Starting price:</strong> from {{ row.currency }} {{ "{:,}".format(row.price_from | int) }} per visit</li>
+        <li><strong>Response time:</strong> {{ row.response_time }}</li>
+        <li><strong>Areas covered:</strong> {{ row.areas_served }}</li>
+      </ul>
+    </section>
+
+    {# Unique block 2: a local insight that only applies to this city. #}
+    <section>
+      <h2>What makes {{ row.service | lower }} in {{ row.city }} different</h2>
+      <p>{{ row.local_insight }}</p>
+    </section>
+
+    <section>
+      <h2>Areas we cover in {{ row.city }}</h2>
+      <ul>
+        {% for area in page.areas %}
+        <li>{{ area }}</li>
+        {% endfor %}
+      </ul>
+    </section>
+
+    {% if page.faqs %}
+    <section>
+      <h2>{{ row.service }} in {{ row.city }}: FAQs</h2>
+      {% for faq in page.faqs %}
+      <h3>{{ faq.q }}</h3>
+      <p>{{ faq.a }}</p>
+      {% endfor %}
+    </section>
+    {% endif %}
+
+    {% if page.related %}
+    <section>
+      <h2>Related pages</h2>
+      <ul>
+        {% for link in page.related %}
+        <li><a href="{{ link.url }}">{{ link.label }}</a></li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
+
+    <p><a href="{{ page.base_url }}/{{ row.locale }}/contact/">Request a {{ row.service | lower }} quote in {{ row.city }}</a></p>
+  </main>
+</body>
+</html>
